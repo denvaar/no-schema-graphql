@@ -39,12 +39,16 @@ defmodule GraphqlFaker do
           | _
         ]
       }) do
-    children =
-      for n <- 1..count,
-          s <- selections do
-        [{k, v}] = Enum.to_list(build(s))
+    fields =
+      selections
+      |> Enum.reduce(%{}, fn selection, a -> Map.merge(a, build(selection)) end)
 
-        %{k => "#{v}-#{n}"}
+    children =
+      for n <- 1..count do
+        for {k, v} <- Map.to_list(fields) do
+          {k, "#{v}-#{n}"}
+        end
+        |> Map.new()
       end
 
     %{name => children}
