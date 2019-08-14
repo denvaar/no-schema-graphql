@@ -46,7 +46,7 @@ defmodule GraphqlFaker do
     children =
       for n <- 1..count do
         for {k, v} <- Map.to_list(fields) do
-          {k, "#{v}-#{n}"}
+          {k, pluralize(v, n)}
         end
         |> Map.new()
       end
@@ -60,5 +60,19 @@ defmodule GraphqlFaker do
       |> Enum.reduce(%{}, fn selection, a -> Map.merge(a, build(selection)) end)
 
     %{name => children}
+  end
+
+  def pluralize(value, index) when is_binary(value) do
+    "#{value}-#{index}"
+  end
+
+  def pluralize(fields, index) when is_list(fields) do
+    fields
+    |> Enum.map(fn field ->
+      field
+      |> Map.to_list()
+      |> Enum.map(fn {k, v} -> {k, "#{pluralize(v, index)}"} end)
+      |> Map.new()
+    end)
   end
 end
